@@ -1,0 +1,1512 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe Coding — 감각으로 코딩하라</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    /* ── Pantone 2026: Cloud Dancer 팔레트 ── */
+    /* Cloud Dancer #F0EEE9 → 다크 테마의 핵심 포인트 */
+    /* Light & Shadow 팔레트: 미스티 그레이, 딥 차콜 */
+    /* Glamour & Gleam 팔레트: 블랙, 립스틱 레드 */
+    /* Atmospheric 팔레트: 스틸 블루, 소프트 라벤더 */
+
+    --cloud-dancer: #F0EEE9;       /* 팬톤 2026 메인 */
+    --cloud-warm: #E8E4DA;          /* Cloud Dancer 워머 */
+    --cloud-dim: rgba(240,238,233,0.15); /* 글로우용 */
+
+    --bg:      #0E0D0B;            /* 따뜻한 다크 베이스 (Cloud Dancer 그림자) */
+    --bg2:     #151310;            /* 세컨드 배경 */
+    --surface: #1C1A16;            /* 카드 표면 */
+    --surface2:#242018;            /* 호버 표면 */
+
+    /* Light & Shadow 팔레트 계열 */
+    --shadow-deep:  #2A2620;
+    --mist:         #8C8880;       /* 미스티 뉴트럴 */
+
+    /* Atmospheric 팔레트 — 스틸 블루 계열 */
+    --atmo-blue:    #5B7FA6;
+    --atmo-lavender:#8A8FC2;
+
+    /* Glamour & Gleam 팔레트 — 레드 포인트 */
+    --gleam-red:    #C8403A;
+
+    /* 시스템 변수 */
+    --accent:   var(--cloud-dancer);  /* 메인 포인트 = Cloud Dancer */
+    --accent2:  var(--atmo-blue);     /* 세컨드 = Atmospheric Blue */
+    --accent3:  var(--atmo-lavender); /* 써드 = Soft Lavender */
+    --text:     #F0EEE9;             /* 본문 = Cloud Dancer */
+    --muted:    var(--mist);          /* 서브텍스트 */
+    --border:   rgba(240,238,233,0.12);
+    --glow:     rgba(240,238,233,0.2);
+    --glow2:    rgba(91,127,166,0.2);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+    cursor: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ── Custom Cursor ── */
+  .cursor {
+    position: fixed;
+    width: 12px; height: 12px;
+    background: var(--cloud-dancer);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    top: 0; left: 0;
+    will-change: transform;
+    transform: translate3d(0,0,0);
+    transition: width 0.2s cubic-bezier(0.23,1,0.32,1),
+                height 0.2s cubic-bezier(0.23,1,0.32,1),
+                opacity 0.2s;
+    mix-blend-mode: difference;
+  }
+  .cursor-trail {
+    position: fixed;
+    width: 32px; height: 32px;
+    border: 1px solid rgba(240,238,233,0.35);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    top: 0; left: 0;
+    will-change: transform;
+    transform: translate3d(0,0,0);
+  }
+
+  /* ── Noise Overlay ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.035;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ── Grid Background ── */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(240,238,233,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(240,238,233,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Nav ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 48px;
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    background: rgba(14,13,11,0.85);
+    transition: padding 0.3s;
+  }
+  nav.scrolled { padding: 14px 48px; }
+
+  .nav-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 1rem;
+    color: var(--cloud-dancer);
+    letter-spacing: 0.05em;
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--muted); }
+
+  .nav-links {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+  }
+  .nav-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--cloud-dancer); }
+
+  .nav-cta {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--bg);
+    background: var(--cloud-dancer);
+    border: none;
+    padding: 10px 20px;
+    cursor: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: box-shadow 0.3s cubic-bezier(0.23,1,0.32,1),
+                transform 0.3s cubic-bezier(0.23,1,0.32,1);
+    text-decoration: none;
+    will-change: transform;
+  }
+  .nav-cta:hover {
+    box-shadow: 0 0 28px rgba(240,238,233,0.15);
+    transform: translate3d(0, -1px, 0);
+  }
+
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: none; }
+  .hamburger span { width: 24px; height: 1px; background: var(--text); transition: all 0.3s; }
+
+  /* ── Sections Base ── */
+  section { position: relative; z-index: 2; }
+
+  /* ── Hero ── */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 24px 80px;
+    overflow: hidden;
+  }
+
+  .hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+  .orb1 {
+    width: 560px; height: 560px;
+    background: radial-gradient(circle, rgba(240,238,233,0.07), transparent 70%);
+    top: 5%; left: -15%;
+    animation: drift1 14s ease-in-out infinite alternate;
+  }
+  .orb2 {
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(91,127,166,0.1), transparent 70%);
+    bottom: 10%; right: -5%;
+    animation: drift2 15s ease-in-out infinite alternate;
+  }
+  .orb3 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(138,143,194,0.08), transparent 70%);
+    top: 40%; left: 50%;
+    animation: drift3 10s ease-in-out infinite alternate;
+  }
+
+  @keyframes drift1 { to { transform: translate(40px, 30px); } }
+  @keyframes drift2 { to { transform: translate(-30px, -40px); } }
+  @keyframes drift3 { to { transform: translate(-20px, 20px); } }
+
+
+  /* ── Pantone Tag ── */
+  .pantone-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+    animation: fadeUp 0.8s 0.3s cubic-bezier(0.23,1,0.32,1) forwards;
+  }
+  .pt-chip {
+    display: inline-block;
+    width: 18px; height: 18px;
+    background: #F0EEE9;
+    border-radius: 2px;
+    flex-shrink: 0;
+    box-shadow: 0 0 12px rgba(240,238,233,0.3);
+  }
+
+  .hero-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    padding: 6px 16px;
+    margin-bottom: 32px;
+    display: inline-block;
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+    animation: fadeUp 0.8s 0.2s cubic-bezier(0.23,1,0.32,1) forwards;
+  }
+  .hero-badge::before { content: '// '; color: var(--muted); }
+
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3.5rem, 9vw, 8rem);
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    margin-bottom: 8px;
+    opacity: 0;
+    transform: translate3d(0, 30px, 0);
+    animation: fadeUp 0.9s 0.35s cubic-bezier(0.23,1,0.32,1) forwards;
+  }
+  .hero-title .line1 { display: block; color: var(--text); }
+  .hero-title .line2 {
+    display: block;
+    background: linear-gradient(135deg, var(--cloud-dancer), var(--atmo-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.9;
+    margin: 28px auto 44px;
+    font-weight: 300;
+    letter-spacing: -0.01em;
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+    animation: fadeUp 0.9s 0.55s cubic-bezier(0.23,1,0.32,1) forwards;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+    animation: fadeUp 0.9s 0.7s cubic-bezier(0.23,1,0.32,1) forwards;
+  }
+
+  .btn-primary {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--cloud-dancer);
+    border: none;
+    padding: 16px 36px;
+    cursor: none;
+    text-decoration: none;
+    transition: box-shadow 0.3s cubic-bezier(0.23,1,0.32,1),
+                transform 0.3s cubic-bezier(0.23,1,0.32,1);
+    position: relative;
+    overflow: hidden;
+    will-change: transform;
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent, rgba(255,255,255,0.15));
+  }
+  .btn-primary:hover {
+    box-shadow: 0 0 40px rgba(240,238,233,0.18);
+    transform: translate3d(0, -2px, 0);
+  }
+
+  .btn-secondary {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: transparent;
+    border: 1px solid rgba(240,238,233,0.35);
+    padding: 16px 36px;
+    cursor: none;
+    text-decoration: none;
+    transition: background 0.25s, border-color 0.25s;
+  }
+  .btn-secondary:hover {
+    background: rgba(240,238,233,0.06);
+    border-color: var(--accent);
+  }
+
+  /* ── Terminal Window ── */
+  .terminal-wrap {
+    margin-top: 80px;
+    width: 100%;
+    max-width: 680px;
+    opacity: 0;
+    transform: translate3d(0, 30px, 0);
+    animation: fadeUp 1s 1s cubic-bezier(0.23,1,0.32,1) forwards;
+    will-change: transform, opacity;
+  }
+
+  .terminal {
+    background: rgba(15,13,10,0.92);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(99,220,180,0.05);
+    text-align: left;
+  }
+
+  .terminal-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(240,238,233,0.02);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #FF5F57; }
+  .dot-y { background: #FEBC2E; }
+  .dot-g { background: #28C840; }
+  .terminal-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-left: 8px;
+  }
+
+  .terminal-body {
+    padding: 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 2;
+    min-height: 160px;
+  }
+
+  .t-prompt { color: var(--cloud-dancer); }
+  .t-cmd { color: var(--text); }
+  .t-out { color: var(--muted); }
+  .t-hl { color: var(--cloud-dancer); }
+  .t-hl2 { color: var(--atmo-blue); }
+  .t-cursor {
+    display: inline-block;
+    width: 8px; height: 14px;
+    background: var(--accent);
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── Scroll indicator ── */
+  .scroll-hint {
+    position: absolute;
+    bottom: 36px;
+    left: 50%;
+    transform: translate3d(-50%, 0, 0);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    animation: fadeUp 1s 1.4s cubic-bezier(0.23,1,0.32,1) forwards;
+  }
+  .scroll-line {
+    width: 1px; height: 48px;
+    background: linear-gradient(to bottom, var(--cloud-dancer), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  .scroll-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+  }
+  @keyframes scrollPulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+  /* ── What is Vibe Coding ── */
+  #what {
+    padding: 120px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-label::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--cloud-dancer);
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    margin-bottom: 24px;
+  }
+
+  .what-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+    margin-top: 64px;
+  }
+
+  .what-text p {
+    color: var(--muted);
+    line-height: 1.95;
+    font-size: 1rem;
+    margin-bottom: 20px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  .what-text p strong { color: var(--accent); font-weight: 500; }
+
+  .what-quote {
+    border-left: 2px solid rgba(240,238,233,0.6);
+    padding: 20px 28px;
+    background: rgba(240,238,233,0.04);
+    margin: 32px 0;
+  }
+  .what-quote p {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
+    color: var(--text);
+    line-height: 1.6;
+    margin: 0;
+  }
+  .what-quote cite {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 10px;
+    display: block;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .stat-card:hover { border-color: rgba(240,238,233,0.25); }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 40px; height: 2px;
+    background: var(--cloud-dancer);
+  }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.8rem;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+  .stat-num.purple { color: var(--atmo-blue); }
+  .stat-num.yellow { color: var(--atmo-lavender); }
+
+  .stat-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ── How it works ── */
+  #how {
+    padding: 120px 48px;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 50%, var(--bg) 100%);
+  }
+
+  .how-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-top: 64px;
+    position: relative;
+  }
+
+  .step-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 40px 36px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.4s cubic-bezier(0.23,1,0.32,1),
+                border-color 0.3s ease,
+                box-shadow 0.4s cubic-bezier(0.23,1,0.32,1);
+    will-change: transform;
+  }
+  .step-card:hover {
+    transform: translate3d(0, -6px, 0);
+    border-color: rgba(240,238,233,0.25);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.3);
+  }
+
+  .step-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 5rem;
+    font-weight: 800;
+    color: rgba(99,220,180,0.07);
+    position: absolute;
+    top: -10px; right: 20px;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .step-icon {
+    width: 48px; height: 48px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 24px;
+    background: rgba(240,238,233,0.04);
+  }
+
+  .step-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+
+  .step-desc {
+    font-size: 0.92rem;
+    color: var(--muted);
+    line-height: 1.9;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  .step-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--cloud-dancer);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    margin-top: 20px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ── Features ── */
+  #features {
+    padding: 120px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    margin-top: 64px;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 40px;
+    display: flex;
+    gap: 24px;
+    transition: border-color 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 80px; height: 80px;
+    background: radial-gradient(circle, rgba(240,238,233,0.08), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .feature-card:hover::after { opacity: 1; }
+  .feature-card:hover { border-color: rgba(240,238,233,0.25); }
+
+  .feature-icon {
+    flex-shrink: 0;
+    width: 44px; height: 44px;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border);
+    background: rgba(240,238,233,0.04);
+  }
+
+  .feature-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .feature-desc {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.85;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  /* ── Who is it for ── */
+  #who {
+    padding: 120px 48px;
+    background: var(--bg2);
+  }
+
+  .who-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .persona-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 64px;
+  }
+
+  .persona-card {
+    border: 1px solid var(--border);
+    padding: 36px;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg);
+    transition: transform 0.4s cubic-bezier(0.23,1,0.32,1),
+                box-shadow 0.4s cubic-bezier(0.23,1,0.32,1);
+    will-change: transform;
+  }
+  .persona-card:hover {
+    transform: translate3d(0, -8px, 0);
+    box-shadow: 0 28px 64px rgba(0,0,0,0.4);
+  }
+
+  .persona-emoji { font-size: 2rem; margin-bottom: 20px; display: block; }
+  .persona-role {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .persona-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .persona-desc {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.85;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  .persona-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+  }
+  .persona-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    letter-spacing: 0.05em;
+  }
+
+  .persona-card:nth-child(1) .persona-role { color: var(--cloud-dancer); }
+  .persona-card:nth-child(2) .persona-role { color: var(--atmo-blue); }
+  .persona-card:nth-child(3) .persona-role { color: var(--atmo-lavender); }
+
+  /* ── CTA Section ── */
+  #cta {
+    padding: 140px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-orb {
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(91,127,166,0.1), transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    filter: blur(60px);
+    pointer-events: none;
+  }
+
+  #cta .section-label { justify-content: center; }
+  #cta .section-label::before { display: none; }
+
+  .cta-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin-bottom: 24px;
+  }
+  .cta-title span {
+    background: linear-gradient(135deg, var(--cloud-dancer), var(--atmo-blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .cta-sub {
+    font-size: 1rem;
+    color: var(--muted);
+    max-width: 480px;
+    margin: 0 auto 44px;
+    line-height: 1.85;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  .cta-input-row {
+    display: flex;
+    max-width: 440px;
+    margin: 0 auto;
+    gap: 0;
+  }
+
+  .cta-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-right: none;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.8rem;
+    padding: 14px 20px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .cta-input::placeholder { color: var(--muted); }
+  .cta-input:focus { border-color: var(--cloud-dancer); }
+
+  .cta-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--cloud-dancer);
+    border: none;
+    padding: 14px 24px;
+    cursor: none;
+    white-space: nowrap;
+    transition: box-shadow 0.2s;
+  }
+  .cta-btn:hover { box-shadow: 0 0 28px rgba(240,238,233,0.15); }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .footer-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--cloud-dancer);
+  }
+  .footer-logo span { color: var(--muted); }
+
+  .footer-copy {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+  }
+  .footer-links a {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--cloud-dancer); }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0);
+    transition: opacity 0.75s cubic-bezier(0.23,1,0.32,1),
+                transform 0.75s cubic-bezier(0.23,1,0.32,1);
+    will-change: transform, opacity;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    nav { padding: 18px 24px; }
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+
+    #what, #features { padding: 80px 24px; }
+    #how, #who { padding: 80px 24px; }
+    #cta { padding: 100px 24px; }
+    footer { padding: 32px 24px; flex-direction: column; gap: 24px; text-align: center; }
+    .footer-links { display: none; }
+
+    .what-grid { grid-template-columns: 1fr; gap: 48px; }
+    .stat-grid { grid-template-columns: 1fr 1fr; }
+    .steps { grid-template-columns: 1fr; }
+    .features-grid { grid-template-columns: 1fr; }
+    .persona-grid { grid-template-columns: 1fr; }
+
+    .hero-title { font-size: clamp(2.8rem, 12vw, 5rem); }
+  }
+
+  @media (max-width: 600px) {
+    .stat-grid { grid-template-columns: 1fr; }
+    .cta-input-row { flex-direction: column; }
+    .cta-input { border-right: 1px solid var(--border); border-bottom: none; }
+    .hero-actions { flex-direction: column; align-items: center; }
+  }
+
+  /* ── Mobile Menu ── */
+  .mobile-menu {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 36px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .mobile-menu.open { opacity: 1; pointer-events: all; }
+  .mobile-menu a {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .mobile-menu a:hover { color: var(--accent); }
+
+  /* ── Typed animation ── */
+  .typed-text { border-right: none; }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-trail" id="cursorTrail"></div>
+<div class="grid-bg"></div>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#what" onclick="closeMenu()">개념</a>
+  <a href="#how" onclick="closeMenu()">방법론</a>
+  <a href="#features" onclick="closeMenu()">특징</a>
+  <a href="#who" onclick="closeMenu()">대상</a>
+  <a href="#cta" onclick="closeMenu()">시작하기</a>
+</div>
+
+<!-- Nav -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">vibe<span>.coding</span></a>
+  <ul class="nav-links">
+    <li><a href="#what">개념</a></li>
+    <li><a href="#how">방법론</a></li>
+    <li><a href="#features">특징</a></li>
+    <li><a href="#who">대상</a></li>
+  </ul>
+  <a href="#cta" class="nav-cta">시작하기 →</a>
+  <div class="hamburger" id="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section id="hero">
+  <div class="hero-orb orb1"></div>
+  <div class="hero-orb orb2"></div>
+  <div class="hero-orb orb3"></div>
+
+  <div class="hero-badge">New Paradigm of Coding</div>
+  <div class="pantone-tag">
+    <span class="pt-chip"></span>
+    <span class="pt-label">PANTONE® 11-4201 Cloud Dancer · Color of the Year 2026</span>
+  </div>
+
+  <h1 class="hero-title">
+    <span class="line1">코드 말고</span>
+    <span class="line2">감각으로</span>
+  </h1>
+
+  <p class="hero-sub">
+    Vibe Coding은 AI와의 자연어 대화로 소프트웨어를 만드는 새로운 개발 방식입니다.
+    문법 대신 <strong>의도</strong>로, 디버깅 대신 <strong>대화</strong>로.
+  </p>
+
+  <div class="hero-actions">
+    <a href="#what" class="btn-primary">개념 알아보기 →</a>
+    <a href="#how" class="btn-secondary">작동 원리 보기</a>
+  </div>
+
+  <div class="terminal-wrap">
+    <div class="terminal">
+      <div class="terminal-header">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <span class="terminal-title">~ vibe-session</span>
+      </div>
+      <div class="terminal-body" id="terminalBody">
+        <div><span class="t-prompt">you@vibe:~$</span> <span class="t-cmd" id="typedCmd"></span><span class="t-cursor" id="termCursor"></span></div>
+        <div id="termOutput" style="margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <span class="scroll-label">scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- What is Vibe Coding -->
+<section id="what">
+  <div class="reveal">
+    <div class="section-label">What is Vibe Coding</div>
+    <h2 class="section-title">코딩의 패러다임이<br>바뀌고 있습니다</h2>
+  </div>
+
+  <div class="what-grid">
+    <div class="what-text reveal" style="transition-delay:0.1s">
+      <p>
+        <strong>Vibe Coding</strong>은 2025년 Andrej Karpathy가 제안한 개념으로,
+        개발자가 코드를 직접 작성하는 대신 AI에게 자연어로 의도를 전달하고
+        결과물을 검수하는 새로운 개발 철학입니다.
+      </p>
+      <p>
+        전통적 코딩이 <strong>문법·알고리즘·디버깅</strong>에 집중했다면,
+        바이브 코딩은 <strong>무엇을 만들 것인가</strong>에만 집중합니다.
+        기술 장벽이 사라지고 아이디어가 곧 제품이 되는 시대입니다.
+      </p>
+      <div class="what-quote">
+        <p>"코드는 읽지 않는다. 그냥 받아들이거나 거부할 뿐이다. 감각으로."</p>
+        <cite>— Andrej Karpathy, OpenAI 공동창업자</cite>
+      </div>
+      <p>
+        비개발자도 앱을 만들고, 창업자는 MVP를 하루 만에 완성하며,
+        기업은 개발 비용을 <strong>80% 이상</strong> 절감합니다.
+      </p>
+    </div>
+
+    <div class="stat-grid reveal" style="transition-delay:0.2s">
+      <div class="stat-card">
+        <div class="stat-num" data-target="10">0</div>
+        <div class="stat-label">배 빠른 프로토타입</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num purple" data-target="80">0</div>
+        <div class="stat-label" style="margin-top:4px">% 개발비 절감</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num yellow" data-target="0">0</div>
+        <div class="stat-label">줄의 코드 필요 없음</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" data-target="24">0</div>
+        <div class="stat-label">시간 내 MVP 완성</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how">
+  <div class="how-inner">
+    <div class="reveal">
+      <div class="section-label">How it Works</div>
+      <h2 class="section-title">세 단계로 끝납니다</h2>
+    </div>
+
+    <div class="steps">
+      <div class="step-card reveal" style="transition-delay:0.1s">
+        <div class="step-num">01</div>
+        <div class="step-icon">💬</div>
+        <div class="step-title">대화로 요청하기</div>
+        <p class="step-desc">
+          "사용자가 로그인할 수 있는 할 일 앱을 만들어줘. 다크 모드도 있으면 좋겠어."
+          코드가 아닌 <strong>말</strong>로 시작합니다.
+        </p>
+        <span class="step-tag">Natural Language</span>
+      </div>
+
+      <div class="step-card reveal" style="transition-delay:0.2s">
+        <div class="step-icon">⚡</div>
+        <div class="step-num">02</div>
+        <div class="step-title">AI가 생성하기</div>
+        <p class="step-desc">
+          Claude, GPT-4, Gemini 같은 AI가 전체 코드베이스를 생성합니다.
+          구조 설계, 함수 작성, 스타일링까지 수초 내에.
+        </p>
+        <span class="step-tag">AI Generation</span>
+      </div>
+
+      <div class="step-card reveal" style="transition-delay:0.3s">
+        <div class="step-icon">🎯</div>
+        <div class="step-num">03</div>
+        <div class="step-title">감각으로 수정하기</div>
+        <p class="step-desc">
+          결과물을 보고 마음에 들지 않으면 다시 말하면 됩니다.
+          "버튼 색을 바꿔줘", "이 기능 추가해줘"로 계속 발전시킵니다.
+        </p>
+        <span class="step-tag">Iterative Refinement</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features">
+  <div class="reveal">
+    <div class="section-label">Features</div>
+    <h2 class="section-title">왜 바이브 코딩인가</h2>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-card reveal" style="transition-delay:0.1s">
+      <div class="feature-icon">🚀</div>
+      <div>
+        <div class="feature-title">극단적 속도</div>
+        <p class="feature-desc">
+          아이디어에서 작동하는 프로토타입까지 수 시간이면 됩니다.
+          개발 주기가 주 단위에서 일 단위로 압축됩니다.
+        </p>
+      </div>
+    </div>
+
+    <div class="feature-card reveal" style="transition-delay:0.15s">
+      <div class="feature-icon">🧠</div>
+      <div>
+        <div class="feature-title">비개발자도 가능</div>
+        <p class="feature-desc">
+          Python도 JavaScript도 몰라도 됩니다. 제품을 정의하는 능력,
+          사용자를 이해하는 감각이 더 중요합니다.
+        </p>
+      </div>
+    </div>
+
+    <div class="feature-card reveal" style="transition-delay:0.2s">
+      <div class="feature-icon">💡</div>
+      <div>
+        <div class="feature-title">아이디어 중심</div>
+        <p class="feature-desc">
+          기술 부채가 아닌 제품 가치에 집중할 수 있습니다.
+          "어떻게 만들까"가 아니라 "무엇을 만들까"에 에너지를 씁니다.
+        </p>
+      </div>
+    </div>
+
+    <div class="feature-card reveal" style="transition-delay:0.25s">
+      <div class="feature-icon">🔄</div>
+      <div>
+        <div class="feature-title">즉각적 반복</div>
+        <p class="feature-desc">
+          사용자 피드백을 받은 즉시 반영할 수 있습니다.
+          린 스타트업의 Build-Measure-Learn을 시간 단위로 실현합니다.
+        </p>
+      </div>
+    </div>
+
+    <div class="feature-card reveal" style="transition-delay:0.3s">
+      <div class="feature-icon">💰</div>
+      <div>
+        <div class="feature-title">비용 혁신</div>
+        <p class="feature-desc">
+          외주 개발비, 인건비, 유지보수 비용이 급감합니다.
+          1인 창업자가 팀 없이 SaaS 제품을 운영할 수 있는 시대입니다.
+        </p>
+      </div>
+    </div>
+
+    <div class="feature-card reveal" style="transition-delay:0.35s">
+      <div class="feature-icon">🌐</div>
+      <div>
+        <div class="feature-title">풀스택 접근</div>
+        <p class="feature-desc">
+          프론트엔드, 백엔드, 데이터베이스, 배포까지 AI가 전부 커버합니다.
+          하나의 대화 스레드로 완전한 제품을 만들 수 있습니다.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Who is it for -->
+<section id="who">
+  <div class="who-inner">
+    <div class="reveal">
+      <div class="section-label">Who is it for</div>
+      <h2 class="section-title">당신을 위한 방식입니다</h2>
+    </div>
+
+    <div class="persona-grid">
+      <div class="persona-card reveal" style="transition-delay:0.1s">
+        <span class="persona-emoji">🚀</span>
+        <div class="persona-role">Founder / Entrepreneur</div>
+        <div class="persona-name">아이디어가 있는 창업자</div>
+        <p class="persona-desc">
+          개발자를 고용하지 않고도 MVP를 만들어 투자자에게 보여줄 수 있습니다.
+          기술 공동창업자 없이 시작해보세요.
+        </p>
+        <div class="persona-tag-list">
+          <span class="persona-tag">MVP 개발</span>
+          <span class="persona-tag">프로토타입</span>
+          <span class="persona-tag">빠른 검증</span>
+        </div>
+      </div>
+
+      <div class="persona-card reveal" style="transition-delay:0.2s">
+        <span class="persona-emoji">🎨</span>
+        <div class="persona-role">Designer / PM</div>
+        <div class="persona-name">제품을 만드는 기획자</div>
+        <p class="persona-desc">
+          디자인한 것을 직접 구현해보고, 요구사항을 코드로 검증할 수 있습니다.
+          개발팀과의 커뮤니케이션도 훨씬 쉬워집니다.
+        </p>
+        <div class="persona-tag-list">
+          <span class="persona-tag">프로토타이핑</span>
+          <span class="persona-tag">기능 검증</span>
+          <span class="persona-tag">빠른 소통</span>
+        </div>
+      </div>
+
+      <div class="persona-card reveal" style="transition-delay:0.3s">
+        <span class="persona-emoji">💼</span>
+        <div class="persona-role">Business Leader</div>
+        <div class="persona-name">디지털 전환을 이끄는 임원</div>
+        <p class="persona-desc">
+          내부 도구, 자동화 워크플로우, 대시보드를 IT 의존 없이 빠르게 구축합니다.
+          업무 자동화의 속도를 10배 높이세요.
+        </p>
+        <div class="persona-tag-list">
+          <span class="persona-tag">업무 자동화</span>
+          <span class="persona-tag">내부 툴</span>
+          <span class="persona-tag">DX 전략</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-orb"></div>
+  <div class="section-label reveal">Get Started</div>
+  <h2 class="cta-title reveal" style="transition-delay:0.1s">
+    지금 바로<br><span>바이브 코딩</span>을<br>시작하세요
+  </h2>
+  <p class="cta-sub reveal" style="transition-delay:0.2s">
+    이메일을 남겨주시면 바이브 코딩 가이드와
+    추천 AI 툴 리스트를 무료로 보내드립니다.
+  </p>
+  <div class="cta-input-row reveal" style="transition-delay:0.3s">
+    <input class="cta-input" type="email" placeholder="your@email.com" id="emailInput">
+    <button class="cta-btn" onclick="handleCTA()">무료 시작 →</button>
+  </div>
+  <p class="cta-note reveal" style="transition-delay:0.4s; font-family:'Space Mono',monospace; font-size:0.65rem; color:var(--muted); margin-top:16px;">
+    스팸 없음. 언제든 구독 취소 가능.
+  </p>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-logo">vibe<span>.coding</span></div>
+  <ul class="footer-links">
+    <li><a href="#">개인정보처리방침</a></li>
+    <li><a href="#">이용약관</a></li>
+    <li><a href="#">문의</a></li>
+  </ul>
+  <div class="footer-copy">© 2025 Vibe Coding. All rights reserved.</div>
+</footer>
+
+<script>
+// ── Cursor ──
+const cursor = document.getElementById('cursor');
+const trail = document.getElementById('cursorTrail');
+let mx = 0, my = 0, tx = 0, ty = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.transform = `translate3d(${mx - 6}px, ${my - 6}px, 0)`;
+});
+
+function animateTrail() {
+  tx += (mx - tx) * 0.12;
+  ty += (my - ty) * 0.12;
+  trail.style.transform = `translate3d(${tx - 16}px, ${ty - 16}px, 0)`;
+  requestAnimationFrame(animateTrail);
+}
+animateTrail();
+
+document.querySelectorAll('a, button, .step-card, .feature-card, .persona-card, .stat-card').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cursor.style.width = '20px';
+    cursor.style.height = '20px';
+    trail.style.transform = trail.style.transform; // keep position
+    trail.style.borderColor = 'rgba(240,238,233,0.7)';
+  });
+  el.addEventListener('mouseleave', () => {
+    cursor.style.width = '12px';
+    cursor.style.height = '12px';
+    trail.style.borderColor = 'rgba(240,238,233,0.35)';
+  });
+});
+
+// ── Nav Scroll ──
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 40);
+});
+
+// ── Terminal Typing ──
+const commands = [
+  {
+    cmd: '"로그인 기능 있는 투두 앱 만들어줘"',
+    out: [
+      '<span class="t-out">⚡ Analyzing request...</span>',
+      '<span class="t-out">✓ Created <span class="t-hl">TodoApp.jsx</span> (234 lines)</span>',
+      '<span class="t-out">✓ Created <span class="t-hl">auth.js</span> — JWT auth</span>',
+      '<span class="t-out">✓ Created <span class="t-hl2">styles.css</span> — dark mode ready</span>',
+      '<span class="t-out">🚀 Ready at <span class="t-hl">localhost:3000</span></span>',
+    ]
+  },
+  {
+    cmd: '"버튼 색을 민트로 바꿔줘"',
+    out: [
+      '<span class="t-out">🎨 Updating theme...</span>',
+      '<span class="t-out">✓ <span class="t-hl3">--primary: #63DCB4</span> applied</span>',
+      '<span class="t-out">✓ 12 components updated</span>',
+    ]
+  },
+  {
+    cmd: '"마감일 기능도 추가해줘"',
+    out: [
+      '<span class="t-out">💡 Adding deadline feature...</span>',
+      '<span class="t-out">✓ DatePicker component created</span>',
+      '<span class="t-out">✓ DB schema updated</span>',
+      '<span class="t-out">✓ Notifications configured</span>',
+    ]
+  }
+];
+
+let cmdIdx = 0, charIdx = 0, outIdx = 0;
+let typing = true;
+
+const typedEl = document.getElementById('typedCmd');
+const outputEl = document.getElementById('termOutput');
+const cursorEl = document.getElementById('termCursor');
+
+function typeChar() {
+  const current = commands[cmdIdx];
+  if (charIdx < current.cmd.length) {
+    typedEl.textContent += current.cmd[charIdx++];
+    setTimeout(typeChar, 50 + Math.random() * 40);
+  } else {
+    cursorEl.style.display = 'none';
+    setTimeout(showOutput, 600);
+  }
+}
+
+function showOutput() {
+  const current = commands[cmdIdx];
+  if (outIdx < current.out.length) {
+    const line = document.createElement('div');
+    line.innerHTML = current.out[outIdx++];
+    outputEl.appendChild(line);
+    setTimeout(showOutput, 300);
+  } else {
+    setTimeout(nextCommand, 2200);
+  }
+}
+
+function nextCommand() {
+  cmdIdx = (cmdIdx + 1) % commands.length;
+  charIdx = 0; outIdx = 0;
+  typedEl.textContent = '';
+  outputEl.innerHTML = '';
+  cursorEl.style.display = 'inline-block';
+  typeChar();
+}
+
+setTimeout(typeChar, 1500);
+
+// ── Scroll Reveal ──
+const revealEls = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  });
+}, { threshold: 0.12 });
+revealEls.forEach(el => io.observe(el));
+
+// ── Counter Animation ──
+const statNums = document.querySelectorAll('.stat-num[data-target]');
+const statsIo = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const el = e.target;
+      const target = parseInt(el.dataset.target);
+      let current = 0;
+      const step = Math.max(1, Math.ceil(target / 40));
+      const timer = setInterval(() => {
+        current = Math.min(current + step, target);
+        el.textContent = current;
+        if (current >= target) clearInterval(timer);
+      }, 40);
+      statsIo.unobserve(el);
+    }
+  });
+}, { threshold: 0.5 });
+statNums.forEach(el => statsIo.observe(el));
+
+// ── Mobile Menu ──
+let menuOpen = false;
+function toggleMenu() {
+  menuOpen = !menuOpen;
+  document.getElementById('mobileMenu').classList.toggle('open', menuOpen);
+  const spans = document.querySelectorAll('.hamburger span');
+  if (menuOpen) {
+    spans[0].style.transform = 'rotate(45deg) translate(4px, 4px)';
+    spans[1].style.opacity = '0';
+    spans[2].style.transform = 'rotate(-45deg) translate(4px, -4px)';
+  } else {
+    spans.forEach(s => { s.style.transform = ''; s.style.opacity = ''; });
+  }
+}
+function closeMenu() {
+  menuOpen = false;
+  document.getElementById('mobileMenu').classList.remove('open');
+  document.querySelectorAll('.hamburger span').forEach(s => {
+    s.style.transform = ''; s.style.opacity = '';
+  });
+}
+
+// ── CTA ──
+function handleCTA() {
+  const email = document.getElementById('emailInput').value;
+  if (!email || !email.includes('@')) {
+    document.getElementById('emailInput').style.borderColor = '#ff5f57';
+    setTimeout(() => {
+      document.getElementById('emailInput').style.borderColor = '';
+    }, 1500);
+    return;
+  }
+  const btn = document.querySelector('.cta-btn');
+  btn.textContent = '✓ 등록 완료!';
+  btn.style.background = 'var(--atmo-blue)';
+  document.getElementById('emailInput').value = '';
+  setTimeout(() => {
+    btn.textContent = '무료 시작 →';
+    btn.style.background = '';
+  }, 3000);
+}
+
+// ── Smooth scroll for anchor links ──
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+});
+</script>
+</body>
+</html>
